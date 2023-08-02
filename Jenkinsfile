@@ -20,8 +20,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'javac -version' // Ensure Java 1.8 is configured
-                sh './gradlew clean build' // Replace with your build command
+                mvn clean install
             }
         }
 

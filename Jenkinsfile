@@ -21,7 +21,12 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                       sh 'mvn clean install'
+                        def mvnHome = tool name: 'Maven', type: 'maven'
+                                           if (isUnix()) {
+                                               sh "${mvnHome}/bin/mvn clean install"
+                                           } else {
+                                               bat "${mvnHome}\\bin\\mvn clean install"
+                                           }
                 }
             }
         }

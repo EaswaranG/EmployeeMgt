@@ -2,56 +2,46 @@ pipeline {
     agent any
 
     environment {
-        AWS_DEFAULT_REGION = 'us-east-2'
-        ECR_REGISTRY = 'public.ecr.aws/q8p3p8k4/emp'
-        ECS_CLUSTER = 'devCluster'
-        ECS_SERVICE = 'empClusterService'
-        DOCKER_IMAGE_NAME = 'employeemanagement'
+        ACR_NAME = 'employeemgt'
+        IMAGE_NAME = 'employee-mgt'
+        CONTAINER_NAME = 'employee-mgt-container'
+        RESOURCE_GROUP = 'EmployeeMgt-resourcegroup'
+        LOCATION = 'Canada Central'
+        ACR_USERNAME = 'employeemgt'
+        ACR_PASSWORD = 'U9Jz38QVnCKToswkCGgDHIflu2xezCLc+JYkreF7Gw+ACRAEeJk0'
+        ACR_REGISTRY = 'employeemgt.azurecr.io'
     }
 
-   stages {
-        stage('Checkout') {
-            steps {
-                // Checkout your source code from version control here
-                // For example: git 'your-repo-url'
-				checkout scm
-            }
-        }
-
-        stage('Build') {
+    stages {
+        stage('Build and Push Docker Image') {
             steps {
                 script {
-                        def mvnHome = tool name: 'Maven', type: 'maven'
-                                           if (isUnix()) {
-                                               sh "${mvnHome}/bin/mvn clean install"
-                                           } else {
-                                               bat "${mvnHome}\\bin\\mvn clean install"
-                                           }
+                      docker.withRegistry("${ACR_REGISTRY}", "${ACR_USERNAME}", "${ACR_PASSWORD}") {
+                      def appImage = docker.build("${ACR_REGISTRY}/${IMAGE_NAME}:${env.BUILD_NUMBER}", "-f Dockerfile .")
+                      appImage.push()
+                      }
                 }
             }
         }
 
-        stage('Push to ECR') {
+        stage('Deploy to Azure Container Instance') {
             steps {
                 script {
-                    def awsCredentials = credentials('aws-access-key')
-                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: awsCredentials]]) {
-                        sh "aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY"
-                        sh "docker build -t $ECR_REGISTRY/my-java-app ."
-                        sh "docker push $ECR_REGISTRY/my-java-app"
-                    }
-                }
-            }
-        }
+                    def acrCreds = credentials('acr-credentials')
 
-        stage('Deploy to ECS') {
-            steps {
-                script {
-                    def awsCredentials = credentials('aws-access-key')
-                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: awsCredentials]]) {
-                        sh "ecs-cli configure profile --access-key $AWS_ACCESS_KEY_ID --secret-key $AWS_SECRET_ACCESS_KEY"
-                        sh "ecs-cli compose --file docker-compose.yml --ecs-params ecs-params.yml up"
-                    }
+                    azureContainerInstance(
+                        authentication: acrCreds,
+                        resourceGroup: "${RESOURCE_GROUP}",
+                        location: "${LOCATION}",
+                        osType: 'Linux',
+                        containers: [[
+                            name: "${CONTAINER_NAME}",
+                            image: "${ACR_NAME}.azurecr.io/${IMAGE_NAME}:${env.BUILD_NUMBER}",
+                            cpu: '0.5',
+                            memory: '1.5Gi',
+                            ports: [[port: 80, protocol: 'TCP']]
+                        ]]
+                    )
                 }
             }
         }

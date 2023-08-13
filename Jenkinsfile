@@ -47,7 +47,7 @@ pipeline {
                         'docker stop emp-mgt-be-container \
                         docker rm emp-mgt-be-container \
                         docker pull ${DOCKER_IMAGE_NAME} \
-                        docker run -d --name emp-mgt-be-container -p 8080:8080 ${DOCKER_IMAGE_NAME}'"""
+                        docker run -d -p 8080:8080 --name emp-mgt-be-container ${DOCKER_IMAGE_NAME}'"""
                 }
             }
         }

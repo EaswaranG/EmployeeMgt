@@ -2,39 +2,53 @@ pipeline {
     agent any
 
     environment {
-        ACR_NAME = 'employeemgt'
-        ACR_IMAGE_NAME = 'employee-mgt'
-        VM_USER = 'azureuser'
-        VM_USERNAME = 'azureuser'
-        VM_IP_ADDRESS = '4.205.87.153'
-        ACR_USERNAME = 'employeemgt'
-        ACR_PASSWORD = 'U9Jz38QVnCKToswkCGgDHIflu2xezCLc+JYkreF7Gw+ACRAEeJk0'
+        DOCKER_IMAGE_NAME = "248036035913.dkr.ecr.us-east-2.amazonaws.com/employee-mgt" // E.g., your-app-image
+        AWS_REGION = "us-east-2"
+        AWS_ECR_REPO = "248036035913.dkr.ecr.us-east-2.amazonaws.com/employee-mgt" // E.g., your-ecr-repo
+        AWS_INSTANCE_IP = "3.143.226.28"
     }
 
-     stages {
-            stage('Pull Docker Image') {
-                steps {
-                    script {
-                        docker.withRegistry("https://${ACR_NAME}.azurecr.io", 'acr-credentials') {
-                            def image = docker.image("${ACR_NAME}.azurecr.io/${ACR_IMAGE_NAME}")
-                            image.pull()
-                        }
-                    }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}")
                 }
             }
+        }
 
-            stage('Deploy to Azure VM') {
-                steps {
-                    script {
-                        sh "docker save -o ${ACR_IMAGE_NAME}.tar.gz ${ACR_NAME}.azurecr.io/${ACR_IMAGE_NAME}" // Save image as tar.gz file
+        stage('Push to ECR') {
+            steps {
+                script {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
+                        docker.withRegistry("https://${AWS_REGION}.dkr.ecr.${AWS_REGION}.amazonaws.com", 'ecr') {
+                            def taggedImage = docker.image("${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}")
+                            def latestImage = docker.image("${DOCKER_IMAGE_NAME}:latest")
 
-                        sh "sshpass -p ${VM_PASSWORD} scp ${ACR_IMAGE_NAME}.tar.gz ${VM_USERNAME}@${VM_IP_ADDRESS}:~/" // Copy image to VM
+                            taggedImage.push()
+                            latestImage.push()
 
-                        sshagent(credentials: ['vm-ssh-credentials']) {
-                            sh "ssh -o StrictHostKeyChecking=no ${VM_USERNAME}@${VM_IP_ADDRESS} 'docker load -i ${ACR_IMAGE_NAME}.tar.gz && docker run -d -p 80:80 ${ACR_IMAGE_NAME}'" // Load and run image on VM
+                            sh "aws ecr put-image-scanning-configuration --repository-name ${AWS_ECR_REPO} --image-scanning-configuration scanOnPush=true"
                         }
                     }
                 }
             }
         }
+
+        stage('Deploy to EC2') {
+            steps {
+                script {
+                    sshagent(['<your-ssh-credentials-id>']) {
+                        sh "ssh -o StrictHostKeyChecking=no ec2-user@${AWS_INSTANCE_IP} 'docker stop <container-name> || true && docker rm <container-name> || true && docker pull ${AWS_ECR_REPO}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} && docker run -d --name <container-name> -p <host-port>:<container-port> ${AWS_ECR_REPO}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}'"
+                    }
+                }
+            }
+        }
     }
+}

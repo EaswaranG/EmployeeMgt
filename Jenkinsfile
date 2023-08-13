@@ -27,7 +27,7 @@ pipeline {
             steps {
                 script {
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
-                        docker.withRegistry("https://${AWS_REGION}.dkr.ecr.${AWS_REGION}.amazonaws.com", 'ecr') {
+                        docker.withRegistry("https://${AWS_REGION}.dkr.ecr.${AWS_REGION}.amazonaws.com", 'aws-credentials') {
                             def taggedImage = docker.image("${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}")
                             def latestImage = docker.image("${DOCKER_IMAGE_NAME}:latest")
 

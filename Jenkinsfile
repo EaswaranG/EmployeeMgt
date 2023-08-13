@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE_NAME = "248036035913.dkr.ecr.us-east-2.amazonaws.com/employee-mgt" // E.g., your-app-image
+        DOCKER_IMAGE_NAME = "employee-mgt" // E.g., your-app-image
         AWS_REGION = "us-east-2"
-        AWS_ECR_REPO = "248036035913.dkr.ecr.us-east-2.amazonaws.com/employee-mgt" // E.g., your-ecr-repo
-        AWS_INSTANCE_IP = "18.117.255.142"
+        AWS_ECR_REPO = "public.ecr.aws/q8p3p8k4/employee-mgt" // E.g., your-ecr-repo
+        AWS_INSTANCE_IP = "3.143.226.28"
     }
 
     stages {

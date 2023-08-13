@@ -19,7 +19,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("${DOCKER_IMAGE_NAME}:latest")
+                    docker.build("${DOCKER_IMAGE_NAME}")
                 }
             }
         }
@@ -31,7 +31,7 @@ pipeline {
                               credentialsId: "docker-credentials",
                               url: 'https://index.docker.io/v1/'
                           ) {
-                              docker.image("${DOCKER_IMAGE_TAG}").push()
+                              docker.image("${DOCKER_IMAGE_NAME}").push()
                           }
                       }
                   }

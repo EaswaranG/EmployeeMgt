@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE_NAME = "employee-mgt" // E.g., your-app-image
+        DOCKER_IMAGE_NAME = "easwarang/employee-mgt" // E.g., your-app-image
         AWS_REGION = "us-east-2"
         AWS_ECR_REPO = "public.ecr.aws/q8p3p8k4/employee-mgt" // E.g., your-ecr-repo
         AWS_INSTANCE_IP = "3.143.226.28"
@@ -23,32 +23,31 @@ pipeline {
             }
         }
 
-        stage('Push to ECR') {
-            steps {
-                script {
-                    withAWS(region: "${AWS_REGION}", credentials: 'aws-credentials') {
-                        docker.withRegistry("https://${AWS_REGION}.dkr.ecr.${AWS_REGION}.amazonaws.com", 'ecr') {
-                            def taggedImage = docker.image("${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}")
-                            def latestImage = docker.image("${DOCKER_IMAGE_NAME}:latest")
+      stage('Push to Docker Hub') {
+          environment {
+              DOCKER_IMAGE_TAG = "${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+              LATEST_IMAGE_TAG = "${DOCKER_IMAGE_NAME}:latest"
+              DOCKER_HUB_CREDENTIALS = 'docker-credentials'
+          }
+          steps {
+              script {
+                  withDockerRegistry(credentialsId: "${DOCKER_HUB_CREDENTIALS}", url: "https://index.docker.io/v1/") {
+                      docker.image(DOCKER_IMAGE_TAG).push()
+                      docker.image(LATEST_IMAGE_TAG).push()
+                  }
+              }
+          }
+      }
 
-                            taggedImage.push()
-                            latestImage.push()
 
-                            sh "aws ecr put-image-scanning-configuration --repository-name ${AWS_ECR_REPO} --image-scanning-configuration scanOnPush=true"
-                        }
-                    }
+    stage('Deploy to EC2') {
+        steps {
+            script {
+                sshagent(['aws-credentials']) {
+                    sh "ssh -o StrictHostKeyChecking=no ec2-user@${AWS_INSTANCE_IP} 'docker stop <container-name> || true && docker rm <container-name> || true && docker pull ${DOCKER_IMAGE_TAG} && docker run -d --name <container-name> -p <host-port>:<container-port> ${DOCKER_IMAGE_TAG}'"
                 }
             }
         }
-
-        stage('Deploy to EC2') {
-            steps {
-                script {
-                    sshagent(['aws-credentials']) {
-                        sh "ssh -o StrictHostKeyChecking=no ec2-user@${AWS_INSTANCE_IP} 'docker stop <container-name> || true && docker rm <container-name> || true && docker pull ${AWS_ECR_REPO}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} && docker run -d --name <container-name> -p <host-port>:<container-port> ${AWS_ECR_REPO}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}'"
-                    }
-                }
-            }
-        }
+    }
     }
 }

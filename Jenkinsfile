@@ -44,10 +44,10 @@ pipeline {
             script {
                 sshagent(['ec2-ssh']) {
                     sh """ssh -o StrictHostKeyChecking=no ec2-user@${AWS_INSTANCE_IP} \
-                        'docker stop <container-name> \
-                        docker rm <container-name> \
-                        docker pull ${DOCKER_IMAGE_TAG} \
-                        docker run -d -p 8080:8080 ${DOCKER_IMAGE_TAG}'"""
+                        'docker stop emp-mgt-be-container \
+                        docker rm emp-mgt-be-container \
+                        docker pull ${DOCKER_IMAGE_NAME} \
+                        docker run -d --name emp-mgt-be-container -p 8080:8080 ${DOCKER_IMAGE_NAME}'"""
                 }
             }
         }

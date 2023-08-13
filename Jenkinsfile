@@ -6,7 +6,7 @@ pipeline {
         AWS_REGION = "us-east-2"
         AWS_ECR_REPO = "public.ecr.aws/q8p3p8k4/employee-mgt" // E.g., your-ecr-repo
         AWS_INSTANCE_IP = "3.143.226.28"
-        DOCKER_IMAGE_TAG = "${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+        DOCKER_IMAGE_TAG = "${DOCKER_IMAGE_NAME}:latest"
     }
 
     stages {
@@ -19,11 +19,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    def latestTag = "${DOCKER_IMAGE_NAME}:latest"
-                                def buildNumberTag = "${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
-
-                                // Build the Docker image with the latest tag
-                                docker.build(latestTag)
+                    docker.build("${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}")
                 }
             }
         }

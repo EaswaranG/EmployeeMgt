@@ -19,7 +19,11 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}")
+                    def latestTag = "${DOCKER_IMAGE_NAME}:latest"
+                                def buildNumberTag = "${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+
+                                // Build the Docker image with the latest tag
+                                docker.build(latestTag)
                 }
             }
         }

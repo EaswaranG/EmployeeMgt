@@ -44,7 +44,7 @@ pipeline {
         stage('Deploy to EC2') {
             steps {
                 script {
-                    sshagent(['<your-ssh-credentials-id>']) {
+                    sshagent(['aws-credentials']) {
                         sh "ssh -o StrictHostKeyChecking=no ec2-user@${AWS_INSTANCE_IP} 'docker stop <container-name> || true && docker rm <container-name> || true && docker pull ${AWS_ECR_REPO}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} && docker run -d --name <container-name> -p <host-port>:<container-port> ${AWS_ECR_REPO}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}'"
                     }
                 }

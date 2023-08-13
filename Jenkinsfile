@@ -5,7 +5,7 @@ pipeline {
         DOCKER_IMAGE_NAME = "248036035913.dkr.ecr.us-east-2.amazonaws.com/employee-mgt" // E.g., your-app-image
         AWS_REGION = "us-east-2"
         AWS_ECR_REPO = "248036035913.dkr.ecr.us-east-2.amazonaws.com/employee-mgt" // E.g., your-ecr-repo
-        AWS_INSTANCE_IP = "3.143.226.28"
+        AWS_INSTANCE_IP = "18.117.255.142"
     }
 
     stages {

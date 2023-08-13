@@ -48,7 +48,7 @@ pipeline {
                     sh "if docker ps -q --filter name=emp-mgt-be-container | grep -q .; then docker stop emp-mgt-be-container; else echo \"Container emp-mgt-be-container is not running.\"; fi"
                     sh "if docker ps -q --filter name=emp-mgt-be-container | grep -q .; then docker rm emp-mgt-be-container; else echo \"Container emp-mgt-be-container is not running.\"; fi"
                     sh "docker pull ${DOCKER_IMAGE_NAME}"
-                    sh "docker run -d -p 8080:8080 --name emp-mgt-be-container ${DOCKER_IMAGE_NAME}"
+                    sh "docker run -d -p 8081:8080 --name emp-mgt-be-container ${DOCKER_IMAGE_NAME}"
                 }
             }
         }

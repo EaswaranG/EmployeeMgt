@@ -25,20 +25,17 @@ pipeline {
         }
 
       stage('Push to Docker Hub') {
-          environment {
-              DOCKER_IMAGE_TAG = "${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
-              LATEST_IMAGE_TAG = "${DOCKER_IMAGE_NAME}:latest"
-              DOCKER_HUB_CREDENTIALS = 'docker-credentials'
-          }
-          steps {
-              script {
-                  withDockerRegistry(credentialsId: "${DOCKER_HUB_CREDENTIALS}", url: "https://index.docker.io/v1/") {
-                      docker.image(DOCKER_IMAGE_TAG).push()
-                      docker.image(LATEST_IMAGE_TAG).push()
+                  steps {
+                      script {
+                          withDockerRegistry(
+                              credentialsId: "docker-credentials",
+                              url: 'https://index.docker.io/v1/'
+                          ) {
+                              docker.image("${DOCKER_IMAGE_TAG}").push()
+                          }
+                      }
                   }
               }
-          }
-      }
 
 
     stage('Deploy to EC2') {

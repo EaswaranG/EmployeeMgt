@@ -46,14 +46,11 @@ pipeline {
         steps {
             script {
                 sshagent(['ec2-ssh']) {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no ec2-user@${AWS_INSTANCE_IP} << 'EOF'
-                      docker stop <container-name> || true
-                      docker rm <container-name> || true
-                      docker pull ${DOCKER_IMAGE_TAG}
-                      docker run -d --name <container-name> -p <host-port>:<container-port> ${DOCKER_IMAGE_TAG}
-                    EOF
-                    """
+                    sh """ssh -o StrictHostKeyChecking=no ec2-user@${AWS_INSTANCE_IP} \
+                        'docker stop <container-name> && \
+                        docker rm <container-name> && \
+                        docker pull ${DOCKER_IMAGE_TAG} && \
+                        docker run -d --name <container-name> -p <host-port>:<container-port> ${DOCKER_IMAGE_TAG}'"""
                 }
             }
         }

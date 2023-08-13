@@ -45,9 +45,7 @@ pipeline {
                 sshagent(['ec2-ssh']) {
                     sh "ssh -o StrictHostKeyChecking=no ec2-user@${AWS_INSTANCE_IP}"
                     sh "docker container ls -a"
-                    sh "#!/bin/bash
-
-                        CONTAINER_NAME="emp-mgt-be-container"
+                    sh "CONTAINER_NAME="emp-mgt-be-container"
 
                         if docker ps -q --filter name="$CONTAINER_NAME" | grep -q .; then
                           docker stop "$CONTAINER_NAME"

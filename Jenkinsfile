@@ -6,6 +6,7 @@ pipeline {
         AWS_REGION = "us-east-2"
         AWS_ECR_REPO = "public.ecr.aws/q8p3p8k4/employee-mgt" // E.g., your-ecr-repo
         AWS_INSTANCE_IP = "3.143.226.28"
+        DOCKER_IMAGE_TAG = "${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
     }
 
     stages {
@@ -41,6 +42,7 @@ pipeline {
 
 
     stage('Deploy to EC2') {
+
         steps {
             script {
                 sshagent(['aws-credentials']) {

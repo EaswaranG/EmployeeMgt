@@ -47,7 +47,7 @@ pipeline {
                         'docker stop <container-name> \
                         docker rm <container-name> \
                         docker pull ${DOCKER_IMAGE_TAG} \
-                        docker run -d --name <container-name> -p 8080:8080 ${DOCKER_IMAGE_TAG}'"""
+                        docker run -d -p 8080:8080 ${DOCKER_IMAGE_TAG}'"""
                 }
             }
         }

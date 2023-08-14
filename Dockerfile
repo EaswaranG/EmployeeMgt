@@ -25,8 +25,3 @@ EXPOSE 8080
 
 # Command to run the Spring Boot application
 CMD ["java", "-jar", "app.jar"]
-
-########## Instructions ##########
-# docker login employeemgt.azurecr.io
-# docker build -t employeemgt.azurecr.io/employee-mgt .
-# docker push employeemgt.azurecr.io/employee-mgt

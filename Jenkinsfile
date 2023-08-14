@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE_NAME = "easwarang/employee-mgt" // E.g., your-app-image
         AWS_REGION = "us-east-2"
-        AWS_INSTANCE_IP = "18.224.137.93"
+        AWS_INSTANCE_IP = "13.58.182.14"
         DOCKER_IMAGE_TAG = "${DOCKER_IMAGE_NAME}:latest"
     }
 

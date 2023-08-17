@@ -43,10 +43,6 @@ pipeline {
             script {
                 sshagent(['ec2-ssh']) {
                     sh "ssh -o StrictHostKeyChecking=no ec2-user@${AWS_INSTANCE_IP}"
-                    sh "docker container ls"
-                    sh "docker container ps"
-                    sh "docker container ls -a"
-                    sh "docker container ps -q --filter name=emp-mgt-be-container"
                     sh "if docker ps -q --filter name=emp-mgt-be-container | grep -q .; then docker stop emp-mgt-be-container; else echo \"Container emp-mgt-be-container is not running.\"; fi"
                     sh "if docker container ls -a -q --filter name=emp-mgt-be-container | grep -q .; then docker rm emp-mgt-be-container; else echo \"Container emp-mgt-be-container is not running.\"; fi"
                     sh "docker pull ${DOCKER_IMAGE_NAME}"
